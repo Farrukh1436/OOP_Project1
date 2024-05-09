@@ -4,6 +4,9 @@
 #include<vector>
 #include<string>
 #include<Windows.h>
+#include<iomanip>
+
+
 
 #include"classes.h"
 
@@ -49,13 +52,15 @@ void printCSV(const wstring& filename);
 
 vector<student> read_students(const string& filename);
 vector<professor> read_professor(const string& filename);
+void modifyCSV(int choice, const wstring& filePath, const string& id);
 bool deleteRecord(const wstring& filePath, const string& deleteID);
+bool addRecordToCSV(const wstring& filePath);
 
 //declarition of all functions
 void home();
 
 unsigned int choice;
-
+string input;
 void home() 
 {
     do 
@@ -65,12 +70,12 @@ void home()
             "\n \t \t 2.Quit"
             "\n \t \t Write your choice:" COLOR_RESET);//home page
 
-        string input;
-        getline(cin, input);
+        string input_1;
+        getline(cin, input_1);
 
         try 
         {
-            choice = stoi(input);  // Attempt to convert input to an integer
+            choice = stoi(input_1);  // Attempt to convert input to an integer
         }
         catch (...) 
         {
@@ -194,6 +199,7 @@ void s_page(const student &s)
 {
     do
     {
+S:
         printf(COLOR_BRIGHT_CYAN
             "\n \t \t 1.Information about student"
             "\n \t \t 2.Data from last semester"
@@ -202,7 +208,7 @@ void s_page(const student &s)
             "\n \t \t Write your choice:" COLOR_RESET);
         string input;
         getline(cin, input);
-
+        system("cls");
         try
         {
             choice = stoi(input);  // Attempt to convert input to an integer
@@ -210,12 +216,13 @@ void s_page(const student &s)
         catch (...)
         {
             printf(COLOR_RED "Error: Invalid input. Please enter a number.\n" COLOR_RESET);
-            continue;
+            goto S;
         }
 
         if (choice < 1 || choice > 4)
         {
             printf(COLOR_RED "Error: Invalid choice. Please enter a number between 1 and 4.\n" COLOR_RESET);
+            goto S;
         }
     } while (choice < 1 || choice > 4);
 
@@ -225,7 +232,7 @@ void s_page(const student &s)
 
     WIN32_FIND_DATAW findData;
     HANDLE hFind = FindFirstFileW(fullPath.c_str(), &findData);
-    system("cls");
+   
     switch (choice)
     {
     case 1:
@@ -269,19 +276,27 @@ void s_page(const student &s)
     }
     s_page(s);
 }
+
+
 void p_page(const professor &p)
 {
     do
     {
-        printf(COLOR_BRIGHT_CYAN "\n \t \t1.Information about Data"
+p:
+        printf(COLOR_BRIGHT_CYAN "\n \t \t1.Information about Professor"
             "\n \t \t2.Information about students of course"
-            "\n \t \t3.Adding record to course"
-            "\n \t \t4.Deleting record"
-            "\n \t \t5.Home Page"
+            "\n \t \t3.Editing student's data to course"
+            "\n \t \t4.Deleting student's record from course"
+            "\n \t \t5.Adding record to course"
+            "\n \t \t6.Home Page"
+            "\n \t \t7.Quit"
             "\n \t \tWrite your choice:" COLOR_RESET);
-        string input;
+       
         getline(cin, input);
+        cin.clear(); // Clear any error flags
+        cin.sync();  // Clear the input buffer
 
+        system("cls");
         try
         {
             choice = stoi(input);  // Attempt to convert input to an integer
@@ -289,31 +304,33 @@ void p_page(const professor &p)
         catch (...)
         {
             printf(COLOR_RED "Error: Invalid input. Please enter a number.\n" COLOR_RESET);
-            continue;
+            goto p;
         }
 
-        if (choice < 1 || choice > 5)
+        if (choice < 1 || choice > 7)
         {
-            printf(COLOR_RED "Error: Invalid choice. Please enter a number between 1 and 4.\n" COLOR_RESET);
+            printf(COLOR_RED "Error: Invalid choice. Please enter a number between 1 and 7.\n" COLOR_RESET);
+            goto p;
         }
-    } while (choice < 1 || choice > 5);
+    } while (choice < 1 || choice > 7);
     string searchPath = "..\\Lists\\Professors"; // Path to find specific user data
     string sub;
-    // Iterate over each subject in the list returned by show_subjects()
-    
-    
         // Construct the full path for the CSV file based on the subject
         wstring fullPath;
         // Perform file search for the current subject
         WIN32_FIND_DATAW findData;
         HANDLE hFind;
         // Clear the console screen
-        system("cls");
+
 
         // Switch based on user choice
         bool check = true;
         bool deleted;
+        bool success;
         string deleteID;
+        string uid;
+        string in;
+
         switch (choice)
         {
         case 1:
@@ -354,10 +371,42 @@ void p_page(const professor &p)
                 if (check == false)
                     printf(COLOR_RED"\n \t \tInvalid INPUT Enter correct input!!" COLOR_RESET);
             }
+
             system("cls");
-            fullPath= s2ws(searchPath) +
-                L"\\" + s2ws(p.id) + L"\\" + s2ws(sub) + L".csv";
-            hFind=FindFirstFileW(fullPath.c_str(), &findData);
+            do
+            {
+            lb:
+                printf(COLOR_BRIGHT_CYAN "\n \t \tWhich section do you want to see?");
+
+                printf("\n \t \t3.SECTION-3"
+                    "\n \t \t4.SECTION-4"
+                    "\n \t \t5.SECTION-5"
+                    "\n \t \t6.SECTION-6"
+                    "\n \t \tWrite your choice:" COLOR_RESET);
+
+                getline(cin, in);
+                system("cls");
+                try
+                {
+                    choice = stoi(in);  // Attempt to convert input to an integer
+                }
+                catch (...)
+                {
+                    printf(COLOR_RED "Error: Invalid input. Please enter a number.\n" COLOR_RESET);
+                    goto lb;
+                }
+
+                if (choice < 3 || choice > 6)
+                {
+                    printf(COLOR_RED "Error: Invalid choice. Please enter a number between 3 and 6.\n" COLOR_RESET);
+                    goto lb;
+                }
+            } while (choice < 3|| choice > 6);
+
+            fullPath = s2ws(searchPath) +
+                L"\\" + s2ws(p.id) + L"\\" + s2ws(sub) + L"\\" + L"SECTION-" + s2ws(in) + L".csv";
+            hFind = FindFirstFileW(fullPath.c_str(), &findData);
+
 
             if (hFind != INVALID_HANDLE_VALUE)
             {
@@ -375,6 +424,95 @@ void p_page(const professor &p)
                 printf(COLOR_BRIGHT_MAGENTA "*" COLOR_RESET);
             break;
         case 3:
+            printf(COLOR_BRIGHT_CYAN "\n \t \tWhich subject do you want to see?"
+                "\n \t \t");
+            for (const auto& subject : p.show_subjects())
+            {
+                cout << subject << (check == true ? " or " : " ");
+                check = false;
+            }
+            while (check != true)
+            {
+                printf(COLOR_BRIGHT_CYAN "\n \t \tWrite your subject name to see:" COLOR_RESET);
+                getline(cin, sub);
+                for (const auto& subject : p.show_subjects())
+                {
+                    if (sub == subject)
+                        check = true;
+                }
+                if (check == false)
+                    printf(COLOR_RED"\n \t \tInvalid INPUT Enter correct input!!" COLOR_RESET);
+            }
+            system("cls");
+            do
+            {
+            cb:
+            printf(COLOR_BRIGHT_CYAN "\n \t \tWhich section do you want to see?");
+            
+             printf("\n \t \t3.SECTION-3"
+                "\n \t \t4.SECTION-4"
+                "\n \t \t5.SECTION-5"
+                "\n \t \t6.SECTION-6"
+                "\n \t \tWrite your choice:" COLOR_RESET);
+
+            getline(cin, in);
+            system("cls");
+            try
+            {
+                choice = stoi(in);  // Attempt to convert input to an integer
+            }
+            catch (...)
+            {
+                printf(COLOR_RED "Error: Invalid input. Please enter a number.\n" COLOR_RESET);
+                goto cb;
+            }
+
+            if (choice < 3 || choice > 6)
+            {
+                printf(COLOR_RED "Error: Invalid choice. Please enter a number between 3 and 6.\n" COLOR_RESET);
+                goto cb;
+            }
+            } while (choice < 3 || choice > 6);
+
+            fullPath = s2ws(searchPath) +
+                L"\\" + s2ws(p.id) + L"\\" + s2ws(sub) + L"\\"+L"SECTION-"+s2ws(in) + L".csv";
+            hFind = FindFirstFileW(fullPath.c_str(), &findData);
+
+            do
+        {
+        d:
+            printf(COLOR_BRIGHT_CYAN "\n \t \tEnter which id do you want to modify:" COLOR_RESET);
+            getline(cin,uid);
+            system("cls");
+            if (uid[0] == 'u')
+                uid[0] = 'U';
+            printf(COLOR_BRIGHT_CYAN"\n \t \tWhich Parameters you want to change from %s", uid.c_str());
+            printf("\n \t \t1.Mid-score"
+                   "\n \t \t2.Finale-score"
+                   "\n \t \t3.Grade"
+                   "\n \t \t4.Absences"
+                   "\n \t \tWrite your choice:" COLOR_RESET);
+           
+            getline(cin, in);
+            system("cls");
+            try
+            {
+                choice = stoi(in);  // Attempt to convert input to an integer
+            }
+            catch (...)
+            {
+                printf(COLOR_RED "Error: Invalid input. Please enter a number.\n" COLOR_RESET);
+                goto d;
+            }
+
+            if (choice < 1 || choice > 4)
+        {
+                printf(COLOR_RED "Error: Invalid choice. Please enter a number between 1 and 4.\n" COLOR_RESET);
+                goto d;
+            }
+        } while (choice < 1 || choice > 4);
+
+        modifyCSV(choice, fullPath, uid);
             break;
         case 4:
             printf(COLOR_BRIGHT_CYAN "\n \t \tWhich subject do you want to delete in?"
@@ -386,7 +524,7 @@ void p_page(const professor &p)
             }
             while (check != true)
             {
-                printf(COLOR_BRIGHT_CYAN "\n \t \tWrite your subject name to modify:" COLOR_RESET);
+                printf(COLOR_BRIGHT_CYAN "\n \t \tWrite your subject name to delete:" COLOR_RESET);
                 getline(cin, sub);
                 for (const auto& subject : p.show_subjects())
                 {
@@ -395,10 +533,39 @@ void p_page(const professor &p)
                 }
                 if (check == false)
                     printf(COLOR_RED"\n \t \tInvalid INPUT Enter correct input!!" COLOR_RESET);
+            }  do
+            {
+            kb:
+                system("cls");
+                printf(COLOR_BRIGHT_CYAN "\n \t \tWhich section do you want to delete user from?");
+
+                printf("\n \t \t3.SECTION-3"
+                    "\n \t \t4.SECTION-4"
+                    "\n \t \t5.SECTION-5"
+                    "\n \t \t6.SECTION-6"
+                    "\n \t \tWrite your choice:" COLOR_RESET);
+
+                getline(cin, in);
+                system("cls");
+                try
+                {
+                    choice = stoi(in);  // Attempt to convert input to an integer
+                }
+                catch (...)
+                {
+                    printf(COLOR_RED "Error: Invalid input. Please enter a number.\n" COLOR_RESET);
+                    goto kb;
+                }
+
+                if (choice < 3 || choice > 6)
+                {
+                    printf(COLOR_RED "Error: Invalid choice. Please enter a number between 3 and 6.\n" COLOR_RESET);
+                    goto kb;
             }
-            system("cls");
+            } while (choice < 3 || choice > 6);
+
             fullPath = s2ws(searchPath) +
-                L"\\" + s2ws(p.id) + L"\\" + s2ws(sub) + L".csv";
+                L"\\" + s2ws(p.id) + L"\\" + s2ws(sub) + L"\\" + L"SECTION-" + s2ws(in) + L".csv";
             hFind = FindFirstFileW(fullPath.c_str(), &findData);
 
             printf(COLOR_BRIGHT_CYAN "\n \t \tEnter the ID of the record you want to delete:" COLOR_RESET);
@@ -418,13 +585,83 @@ void p_page(const professor &p)
                 printf(COLOR_RED "\n \t \tFailed to delete record.\n" COLOR_RESET);
             }
             break;
-            break;
         case 5:
-            home();
+            printf(COLOR_BRIGHT_CYAN "\n \t \tWhich subject do you want to add  in?"
+                "\n \t \t");
+            for (const auto& subject : p.show_subjects())
+            {
+                cout << subject << (check == true ? " or " : " ");
+                check = false;
+            }
+            while (check != true)
+            {
+                printf(COLOR_BRIGHT_CYAN "\n \t \tWrite your subject name to add record:" COLOR_RESET);
+                getline(cin, sub);
+                for (const auto& subject : p.show_subjects())
+                {
+                    if (sub == subject)
+                        check = true;
+                }
+                if (check == false)
+                    printf(COLOR_RED"\n \t \tInvalid INPUT Enter correct input!!" COLOR_RESET);
+            } 
+            do
+            {
+            fb:
+                system("cls");
+                printf(COLOR_BRIGHT_CYAN "\n \t \tWhich section do you want to add user for?");
+
+                printf("\n \t \t3.SECTION-3"
+                    "\n \t \t4.SECTION-4"
+                    "\n \t \t5.SECTION-5"
+                    "\n \t \t6.SECTION-6"
+                    "\n \t \tWrite your choice:" COLOR_RESET);
+
+                getline(cin, in);
+                system("cls");
+                try
+                {
+                    choice = stoi(in);  // Attempt to convert input to an integer
+                }
+                catch (...)
+                {
+                    printf(COLOR_RED "Error: Invalid input. Please enter a number.\n" COLOR_RESET);
+                    goto fb;
+                }
+
+                if (choice < 3 || choice > 6)
+                {
+                    printf(COLOR_RED "Error: Invalid choice. Please enter a number between 3 and 6.\n" COLOR_RESET);
+                    goto fb;
+                }
+            } while (choice < 3 || choice > 6);
+
+            fullPath = s2ws(searchPath) +
+                L"\\" + s2ws(p.id) + L"\\" + s2ws(sub) + L"\\" + L"SECTION-" + s2ws(in) + L".csv";
+            hFind = FindFirstFileW(fullPath.c_str(), &findData);
+
+            
+            success = addRecordToCSV(fullPath);
+
+            
+            if(!success)
+            {
+                printf(COLOR_RED "\n \t \tFailed to add record.\n" COLOR_RESET);
+            }
+            break;
         case 6:
+            home();
+        case 7:
             exit(0);
 
         }
+        // Clear the input buffer
+        printf(COLOR_BRIGHT_BLUE"\n \t \tPress enter to continue:");
+        cin.ignore(1337, '\n');
+
+        cin.clear(); // Clear any error flags
+        cin.sync();  // Clear the input buffer
+        system("cls");
         p_page(p);
 }
 
@@ -527,7 +764,7 @@ void printCSV(const wstring &filename)
         string cell;
 
         // Split each line into cells based on comma delimiter
-        while (getline(ss, cell, ';')) 
+        while (getline(ss, cell, ',')) 
         {
             row.push_back(cell);
         }
@@ -658,5 +895,285 @@ bool deleteRecord(const wstring& filePath, const string& deleteID)
     // Close the file
     outFile.close();
 
+    return true;
+}
+void modifyCSV(int choice, const wstring& filePath, const string& id)
+{
+    // Convert id to uppercase if it starts with lowercase 'u'
+    string modifiedId = id;
+    if (!id.empty() && id[0] == 'u')
+    {
+        modifiedId[0] = 'U';
+    }
+
+    // Open the CSV file for reading and writing
+    wifstream file(filePath);
+    if (!file.is_open())
+    {
+        printf(COLOR_RED "Error opening file: "), wcerr << filePath;
+        printf("\n" COLOR_RESET);
+        return;
+    }
+
+    wstring line;
+    vector<wstring> lines;
+    bool idFound = false;
+
+    // Read each line of the file
+    while (getline(file, line))
+    {
+        if (line.find(s2ws(modifiedId)) != wstring::npos)
+        {
+            idFound = true;
+            vector<wstring> cells;
+            wstringstream wss(line);
+            wstring cell;
+
+            while (getline(wss, cell, L','))
+            {
+                cells.push_back(cell);
+            }
+
+            if (choice == 1 && cells.size() >= 2)
+            {
+                printf(COLOR_BRIGHT_CYAN);
+                wcout << L"Enter new Mid-score for ID " << s2ws(modifiedId) << L": ";
+                printf(COLOR_RESET);
+                wstring newMidScore;
+                getline(wcin, newMidScore);
+
+                try
+                {
+                    int midScore = stoi(newMidScore);
+                    if (midScore > 30)
+                    {
+                        printf(COLOR_RED "Error: Mid-score should not exceed 30.\n" COLOR_RESET);
+                        return;
+            }
+                    cells[1] = to_wstring(midScore);
+                }
+                catch (const std::invalid_argument&)
+            {
+                    printf(COLOR_RED "Error: Mid-score should be an integer.\n" COLOR_RESET);
+                    return;
+                }
+            }
+            else if (choice == 2 && cells.size() >= 3)
+            {
+                printf(COLOR_BRIGHT_CYAN);
+                wcout << L"Enter new Final-score for ID " << s2ws(modifiedId) << L": ";
+                wstring newFinalScore;
+                printf(COLOR_RESET);
+                getline(wcin, newFinalScore);
+
+                try
+                {
+                    int finalScore = stoi(newFinalScore);
+                    if (finalScore > 30)
+                    {
+                        printf(COLOR_RED "Error: Final-score should not exceed 30.\n" COLOR_RESET);
+                        return;
+            }
+                    cells[2] = to_wstring(finalScore);
+                }
+                catch (const std::invalid_argument&)
+            {
+                    printf(COLOR_RED "Error: Final-score should be an integer.\n" COLOR_RESET);
+                    return;
+                }
+            }
+            else if (choice == 3 && cells.size() >= 4)
+            {
+                printf(COLOR_BRIGHT_CYAN);
+                wcout << L"Enter new Grade for ID " << s2ws(modifiedId) << L": ";
+                printf(COLOR_RESET);
+                wstring newGrade;
+                getline(wcin, newGrade);
+
+                if (newGrade != L"B" && newGrade != L"B+" && newGrade != L"A" && newGrade != L"A+" && newGrade != L"A-")
+                {
+                    printf(COLOR_RED "Error: Invalid Grade entered.\n" COLOR_RESET);
+                    return;
+                }
+                cells[3] = newGrade;
+            }
+            else if (choice == 4 && cells.size() >= 5)
+            {
+                printf(COLOR_BRIGHT_CYAN);
+                wcout << L"Enter new Absences for ID " << s2ws(modifiedId) << L": ";
+                printf(COLOR_RESET);
+                wstring newAbsences;
+                getline(wcin, newAbsences);
+
+                try
+                {
+                    int absences = stoi(newAbsences);
+                    cells[4] = to_wstring(absences);
+                }
+                catch (const std::invalid_argument&)
+                {
+                    printf(COLOR_RED "Error: Absences should be a number.\n" COLOR_RESET);
+                    return;
+                }
+            }
+            else
+            {
+                printf(COLOR_RED "Error: Not enough fields in the CSV line.\n" COLOR_RESET);
+                return;
+            }
+
+            wstring modifiedLine;
+            for (const auto& cell : cells)
+            {
+                modifiedLine += cell + L",";
+            }
+            modifiedLine.pop_back();
+            lines.push_back(modifiedLine);
+        }
+        else
+        {
+            lines.push_back(line);
+        }
+    }
+
+    file.close();
+
+    if (!idFound)
+    {
+        printf(COLOR_RED "Error: ID not found in the file.\n" COLOR_RESET);
+        return;
+    }
+
+    wofstream outFile(filePath);
+    if (!outFile.is_open())
+    {
+        printf(COLOR_RED "Error opening file for writing"), wcerr << filePath;
+        printf("\n", COLOR_RESET);
+        return;
+    }
+
+    for (const auto& l : lines)
+    {
+        outFile << l << endl;
+    }
+
+    outFile.close();
+}
+bool addRecordToCSV(const wstring& filePath)
+{
+    // Open the CSV file for appending
+    wofstream file(filePath, ios::app);
+    if (!file.is_open())
+    {
+        printf(COLOR_RED "Error opening file for appending: "), wcerr << filePath;
+        printf("\n" COLOR_RESET);
+        return false;
+    }
+
+    // Ask the user for ID, Mid-score, Final-score, Grade, and Absence
+    wstring id, midScore, finalScore, grade, absence;
+    printf(COLOR_BRIGHT_CYAN);
+    wcout << L"Enter ID: ";
+    printf(COLOR_RESET);
+    wcin >> id;
+
+    // Convert id to uppercase if it starts with lowercase 'u'
+    if (!id.empty() && id[0] == 'u')
+    {
+        id[0] = 'U';
+    }
+
+    printf(COLOR_BRIGHT_CYAN);
+    wcout << L"Enter Mid-score: ";
+    printf(COLOR_RESET);
+    wcin >> midScore;
+
+    // Validate Mid-score
+    try
+    {
+        int mid = stoi(midScore);
+        if (mid < 0 || mid > 30)
+        {
+            printf(COLOR_RED "Error: Mid-score should be between 0 and 30.\n" COLOR_RESET);
+            file.close();
+            return false;
+        }
+    }
+    catch (const std::invalid_argument&)
+    {
+        printf(COLOR_RED "Error: Mid-score should be an integer.\n" COLOR_RESET);
+        file.close();
+        return false;
+    }
+
+    printf(COLOR_BRIGHT_CYAN);
+    wcout << L"Enter Final-score: ";
+    printf(COLOR_RESET);
+    wcin >> finalScore;
+
+    // Validate Final-score
+    try
+    {
+        int final = stoi(finalScore);
+        if (final < 0 || final > 30)
+        {
+            printf(COLOR_RED "Error: Final-score should be between 0 and 30.\n" COLOR_RESET);
+            file.close();
+            return false;
+        }
+    }
+    catch (const std::invalid_argument&)
+    {
+        printf(COLOR_RED "Error: Final-score should be an integer.\n" COLOR_RESET);
+        file.close();
+        return false;
+    }
+
+    printf(COLOR_BRIGHT_CYAN);
+    wcout << L"Enter Grade (e.g., B, B+, A, A+, A-): ";
+    printf(COLOR_RESET);
+    wcin >> grade;
+
+    // Validate Grade
+    if (grade != L"B" && grade != L"B+" && grade != L"A" && grade != L"A+" && grade != L"A-")
+    {
+        printf(COLOR_RED "Error: Invalid Grade entered.\n" COLOR_RESET);
+        file.close();
+        return false;
+    }
+
+    printf(COLOR_BRIGHT_CYAN);
+    wcout << L"Enter Absences: ";
+    printf(COLOR_RESET);
+    wcin >> absence;
+
+    // Validate Absences
+    try
+    {
+        int abs = stoi(absence);
+        if (abs < 0)
+        {
+            printf(COLOR_RED "Error: Absences should be a non-negative integer.\n" COLOR_RESET);
+            file.close();
+            return false;
+        }
+    }
+    catch (const std::invalid_argument&)
+    {
+        printf(COLOR_RED "Error: Absences should be an integer.\n" COLOR_RESET);
+        file.close();
+        return false;
+    }
+
+    // Construct the CSV line from user input
+    wstring csvLine = id + L"," + midScore + L"," + finalScore + L"," + grade + L"," + absence;
+
+    // Append the CSV line to the file
+    file << csvLine << endl;
+
+    // Close the file
+    file.close();
+
+    printf(COLOR_GREEN "Record added successfully to the CSV file.\n" COLOR_RESET);
     return true;
 }
